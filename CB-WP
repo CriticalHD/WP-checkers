@@ -34,8 +34,18 @@ gsctool -a -w 2>/dev/null | grep -E "Flash WP"
 
 # ---- CCD Capabilities ----
 echo
-echo -e "${GREEN}----- CCD Capabilities -----${NC}"
-gsctool -a -I 2>/dev/null | grep -E "FlashAP|FlashEC|OverrideWP|Open" || echo -e "AllowUnverifiedRo: ${RED}Not readable / Locked by Ti50${NC}"
+echo -e "${GREEN}----- CCD Capabilities (All Known) -----${NC}"
+
+capabilities=("FlashAP" "FlashEC" "OverrideWP" "OpenNoDevMode" "AllowUnverifiedRo" "OpenNoTPMWipe" "OpenNoLongPP" "RemoveBatteryBypassPP")
+
+for cap in "${capabilities[@]}"; do
+    value=$(gsctool -a -I 2>/dev/null | grep "$cap" | awk '{print $2}')
+    if [ -z "$value" ]; then
+        echo -e "$cap: ${RED}Locked / Not readable${NC}"
+    else
+        echo -e "$cap: ${GREEN}$value${NC}"
+    fi
+done
 
 # ---- SPI Flash Chip ----
 echo
@@ -44,8 +54,8 @@ flashrom --wp-status 2>/dev/null | grep -E "enabled|disabled" || echo -e "${RED}
 
 # ---- Kernel WP Messages ----
 echo
-echo -e "${GREEN}----- Kernel WP Messages (Only Events) -----${NC}"
-dmesg | grep -i wp | grep -E "write-protect|wp:|WP:" | tail -n 3 || echo -e "${RED}No relevant WP kernel messages${NC}"
+echo -e "${GREEN}----- Kernel WP / HWP Messages (Important Only) -----${NC}"
+dmesg | grep -iE "write-protect|wp:|WP:|HWP" | tail -n 5 || echo -e "${RED}No relevant WP or HWP kernel messages${NC}"
 
 # ---- Firmware Read Test ----
 echo
