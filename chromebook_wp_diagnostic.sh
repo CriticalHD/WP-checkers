@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# ==================================
+#      CHROMEBOOK WP DIAGNOSTIC
+# ==================================
+
+echo "=================================="
+echo "      CHROMEBOOK WP DIAGNOSTIC"
+echo "=================================="
+
+echo
+echo "----- CROSSYSTEM (Firmware view) -----"
+crossystem wpsw_cur 2>/dev/null
+
+echo
+echo "----- GSC / Ti50 Status -----"
+gsctool -a -w 2>/dev/null
+
+echo
+echo "----- CCD Capabilities -----"
+gsctool -a -I 2>/dev/null | grep -E "FlashAP|FlashEC|OverrideWP|Open"
+
+echo
+echo "----- SPI Flash Chip -----"
+flashrom --wp-status 2>/dev/null
+
+echo
+echo "----- Kernel WP Messages -----"
+dmesg | grep -i wp | tail -n 10
+
+echo
+echo "----- Firmware Read Test -----"
+flashrom -p host -r /tmp/wp_test_backup.bin 2>/dev/null
+
+if [ $? -eq 0 ]; then
+    echo "Flash read SUCCESS (SPI access works)"
+    rm -f /tmp/wp_test_backup.bin
+else
+    echo "Flash read FAILED"
+fi
+
+echo
+echo "=================================="
+echo "           DONE"
+echo "=================================="
