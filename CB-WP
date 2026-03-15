@@ -1,11 +1,11 @@
 #!/bin/bash
 # ==================================
 #      CHROMEBOOK WP DIAGNOSTIC
-#      Version: 9
+#      Version: 10
 # ==================================
 
 # Make version number visible at the top
-echo -e "\033[1;36mChromebook WP Diagnostic Script - Version 9\033[0m"
+echo -e "\033[1;36mChromebook WP Diagnostic Script - Version 10\033[0m"
 
 # Color codes
 RED='\033[0;31m'
@@ -26,28 +26,24 @@ devsw=$(crossystem devsw_cur 2>/dev/null)
 dev_usb=$(crossystem dev_boot_usb 2>/dev/null)
 dev_signed=$(crossystem dev_boot_signed_only 2>/dev/null)
 
-echo -e "wpsw_cur: ${wpsw} → $( [ "$wpsw" -eq 1 ] && echo -e '${RED}Flash write-protect ENABLED${NC}' || echo -e '${GREEN}Flash write-protect DISABLED${NC}' )"
-echo -e "devsw_cur: ${devsw} → $( [ "$devsw" -eq 1 ] && echo -e '${GREEN}Developer Switch ON${NC}' || echo -e '${RED}Developer Switch OFF${NC}' )"
-echo -e "dev_boot_usb: ${dev_usb} → $( [ "$dev_usb" -eq 1 ] && echo -e '${GREEN}USB boot allowed${NC}' || echo -e '${RED}USB boot disabled${NC}' )"
-echo -e "dev_boot_signed_only: ${dev_signed} → $( [ "$dev_signed" -eq 1 ] && echo -e '${RED}Boot signed-only enforced${NC}' || echo -e '${GREEN}Unsigned boot allowed${NC}' )"
+echo -e "wpsw_cur: $wpsw → $( [ "$wpsw" -eq 1 ] && echo 'Flash write-protect ENABLED' || echo 'Flash write-protect DISABLED' )"
+echo -e "devsw_cur: $devsw → $( [ "$devsw" -eq 1 ] && echo 'Developer Switch ON' || echo 'Developer Switch OFF' )"
+echo -e "dev_boot_usb: $dev_usb → $( [ "$dev_usb" -eq 1 ] && echo 'USB boot allowed' || echo 'USB boot disabled' )"
+echo -e "dev_boot_signed_only: $dev_signed → $( [ "$dev_signed" -eq 1 ] && echo 'Boot signed-only enforced' || echo 'Unsigned boot allowed' )"
 
-# ---- GSC / Ti50 Status ----
+# ---- GSC / Ti50 Status (Compact) ----
 echo
-echo -e "${GREEN}----- GSC / Ti50 Status -----${NC}"
-gsctool -a -w 2>/dev/null | while read -r line; do
-    if [[ -n "$line" ]]; then
-        echo -e "${YELLOW}$line${NC}"
-    fi
-done
+echo -e "${GREEN}----- GSC / Ti50 Status (Compact) -----${NC}"
+gsctool -a -w 2>/dev/null | awk '{$1=$1; print}' | paste -sd ", " -
 
-# ---- CCD Capabilities ----
+# ---- CCD Capabilities (Fixed & Color Coded) ----
 echo
 echo -e "${GREEN}----- CCD Capabilities -----${NC}"
 gsctool -a -I 2>/dev/null | grep -v "UartGSC" | while read -r line; do
     name=$(echo "$line" | awk '{print $1}')
     value=$(echo "$line" | awk '{print $2}')
 
-    # Interpret numeric and letter values with correct color coding
+    # Map numeric or letter values to human-readable color-coded states
     case "$value" in
         0) state="${RED}Never${NC}";;
         1) state="${BLUE}If Opened${NC}";;
