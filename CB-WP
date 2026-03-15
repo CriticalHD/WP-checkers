@@ -14,7 +14,7 @@ echo -e "${YELLOW}==================================${NC}"
 echo -e "${YELLOW}      CHROMEBOOK WP DIAGNOSTIC${NC}"
 echo -e "${YELLOW}==================================${NC}"
 
-# ---- CROSSYSTEM (Firmware view) ----
+# ---- CROSSYSTEM (Decoded Firmware view) ----
 echo
 echo -e "${GREEN}----- CROSSYSTEM (Firmware / DevMode info) -----${NC}"
 wpsw=$(crossystem wpsw_cur 2>/dev/null)
@@ -35,7 +35,7 @@ gsctool -a -w 2>/dev/null | grep -E "Flash WP"
 # ---- CCD Capabilities ----
 echo
 echo -e "${GREEN}----- CCD Capabilities -----${NC}"
-gsctool -a -I 2>/dev/null | grep -E "FlashAP|FlashEC|OverrideWP|Open|AllowUnverifiedRo"
+gsctool -a -I 2>/dev/null | grep -E "FlashAP|FlashEC|OverrideWP|Open" || echo -e "AllowUnverifiedRo: ${RED}Not readable / Locked by Ti50${NC}"
 
 # ---- SPI Flash Chip ----
 echo
@@ -44,7 +44,7 @@ flashrom --wp-status 2>/dev/null | grep -E "enabled|disabled" || echo -e "${RED}
 
 # ---- Kernel WP Messages ----
 echo
-echo -e "${GREEN}----- Kernel WP Messages (Important Only) -----${NC}"
+echo -e "${GREEN}----- Kernel WP Messages (Only Events) -----${NC}"
 dmesg | grep -i wp | grep -E "write-protect|wp:|WP:" | tail -n 3 || echo -e "${RED}No relevant WP kernel messages${NC}"
 
 # ---- Firmware Read Test ----
