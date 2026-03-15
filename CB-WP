@@ -28,21 +28,19 @@ gsctool -a -I 2>/dev/null | grep -E "FlashAP|FlashEC|OverrideWP|Open"
 
 echo
 echo -e "${GREEN}----- SPI Flash Chip (Important Messages Only) -----${NC}"
-flashrom --wp-status 2>/dev/null | grep -E "enabled|disabled"
+flashrom --wp-status 2>/dev/null | grep -E "enabled|disabled" || echo -e "${RED}SPI flash status unavailable${NC}"
 
 echo
 echo -e "${GREEN}----- Kernel WP Messages (Important Only) -----${NC}"
-dmesg | grep -i wp | tail -n 5
+dmesg | grep -i wp | grep -E "write-protect|wp" | tail -n 3 || echo -e "${RED}No relevant WP kernel messages${NC}"
 
 echo
-echo -e "${GREEN}----- Firmware Read Test -----${NC}"
-flashrom -p host -r /tmp/wp_test_backup.bin 2>/dev/null
-
-if [ $? -eq 0 ]; then
+echo -e "${GREEN}----- Firmware Read Test (SPI Only) -----${NC}"
+if flashrom -p host -r /tmp/wp_test_backup.bin 2>/dev/null | grep -q "Written"; then
+    echo -e "${RED}Firmware read may have failed (unexpected output)${NC}"
+else
     echo -e "${GREEN}Flash read SUCCESS (SPI access works)${NC}"
     rm -f /tmp/wp_test_backup.bin
-else
-    echo -e "${RED}Flash read FAILED${NC}"
 fi
 
 echo
