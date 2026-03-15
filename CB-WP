@@ -26,10 +26,10 @@ devsw=$(crossystem devsw_cur 2>/dev/null)
 dev_usb=$(crossystem dev_boot_usb 2>/dev/null)
 dev_signed=$(crossystem dev_boot_signed_only 2>/dev/null)
 
-echo -e "wpsw_cur: ${wpsw} → $( [ "$wpsw" -eq 1 ] && echo 'Flash write-protect ENABLED' || echo 'Flash write-protect DISABLED' )"
-echo -e "devsw_cur: ${devsw} → $( [ "$devsw" -eq 1 ] && echo 'Developer Switch ON' || echo 'Developer Switch OFF' )"
-echo -e "dev_boot_usb: ${dev_usb} → $( [ "$dev_usb" -eq 1 ] && echo 'USB boot allowed' || echo 'USB boot disabled' )"
-echo -e "dev_boot_signed_only: ${dev_signed} → $( [ "$dev_signed" -eq 1 ] && echo 'Boot signed-only enforced' || echo 'Unsigned boot allowed' )"
+echo -e "wpsw_cur: ${wpsw} → $( [ "$wpsw" -eq 1 ] && echo -e '${RED}Flash write-protect ENABLED${NC}' || echo -e '${GREEN}Flash write-protect DISABLED${NC}' )"
+echo -e "devsw_cur: ${devsw} → $( [ "$devsw" -eq 1 ] && echo -e '${GREEN}Developer Switch ON${NC}' || echo -e '${RED}Developer Switch OFF${NC}' )"
+echo -e "dev_boot_usb: ${dev_usb} → $( [ "$dev_usb" -eq 1 ] && echo -e '${GREEN}USB boot allowed${NC}' || echo -e '${RED}USB boot disabled${NC}' )"
+echo -e "dev_boot_signed_only: ${dev_signed} → $( [ "$dev_signed" -eq 1 ] && echo -e '${RED}Boot signed-only enforced${NC}' || echo -e '${GREEN}Unsigned boot allowed${NC}' )"
 
 # ---- GSC / Ti50 Status ----
 echo
@@ -39,16 +39,18 @@ gsctool -a -w 2>/dev/null | grep -E "Flash WP"
 # ---- CCD Capabilities ----
 echo
 echo -e "${GREEN}----- CCD Capabilities -----${NC}"
-gsctool -a -I 2>/dev/null | while read -r line; do
+gsctool -a -I 2>/dev/null | grep -v "UartGSC" | while read -r line; do
     name=$(echo "$line" | awk '{print $1}')
     value=$(echo "$line" | awk '{print $2}')
 
-    # Convert numeric/state to human readable with color coding
+    # Convert numeric/state to human readable with full color coding
     case "$value" in
         0) state="${RED}Never${NC}";;
         1) state="${BLUE}If Opened${NC}";;
         2) state="${GREEN}Always${NC}";;
         "") state="${RED}Locked / Not readable${NC}";;
+        Y|y) state="${GREEN}Yes${NC}";;
+        N|n) state="${RED}No${NC}";;
         *) state="$value";;
     esac
 
