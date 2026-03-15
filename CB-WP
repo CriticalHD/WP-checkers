@@ -18,7 +18,7 @@ gsctool -a -w 2>/dev/null
 
 echo
 echo "----- CCD Capabilities -----"
-gsctool -a -I 2>/dev/null | grep -E "FlashAP|FlashEC|OverrideWP|Open"
+gsctool -a -I 2>/dev/null | grep -E "FlashAP|AllowUnverifiedRo|OverrideWP|Open"
 
 echo
 echo "----- SPI Flash Chip -----"
