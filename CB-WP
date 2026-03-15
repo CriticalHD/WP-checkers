@@ -8,7 +8,8 @@
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+BLUE='\033[0;34m'
+NC='\033[0m'
 
 echo -e "${YELLOW}==================================${NC}"
 echo -e "${YELLOW}      CHROMEBOOK WP DIAGNOSTIC${NC}"
@@ -38,11 +39,19 @@ echo -e "${GREEN}----- CCD Capabilities (All Reported) -----${NC}"
 gsctool -a -I 2>/dev/null | while read -r line; do
     name=$(echo "$line" | awk '{print $1}')
     value=$(echo "$line" | awk '{print $2}')
-    if [ -z "$value" ]; then
-        echo -e "$name: ${RED}Locked / Not readable${NC}"
+    # Convert numeric/state to human readable
+    if [ "$value" == "0" ]; then
+        state="${RED}Never${NC}"
+    elif [ "$value" == "1" ]; then
+        state="${BLUE}If Opened${NC}"
+    elif [ "$value" == "2" ]; then
+        state="${GREEN}Always${NC}"
+    elif [ -z "$value" ]; then
+        state="${RED}Locked / Not readable${NC}"
     else
-        echo -e "$name: ${GREEN}$value${NC}"
+        state="$value"
     fi
+    echo -e "$name: $state"
 done
 
 # ---- SPI Flash Chip ----
