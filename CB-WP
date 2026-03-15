@@ -4,42 +4,48 @@
 #      CHROMEBOOK WP DIAGNOSTIC
 # ==================================
 
-echo "=================================="
-echo "      CHROMEBOOK WP DIAGNOSTIC"
-echo "=================================="
+# Color codes
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+echo -e "${YELLOW}==================================${NC}"
+echo -e "${YELLOW}      CHROMEBOOK WP DIAGNOSTIC${NC}"
+echo -e "${YELLOW}==================================${NC}"
 
 echo
-echo "----- CROSSYSTEM (Firmware view) -----"
+echo -e "${GREEN}----- CROSSYSTEM (Firmware view) -----${NC}"
 crossystem wpsw_cur 2>/dev/null
 
 echo
-echo "----- GSC / Ti50 Status -----"
-gsctool -a -w 2>/dev/null
+echo -e "${GREEN}----- GSC / Ti50 Status -----${NC}"
+gsctool -a -w 2>/dev/null | grep -E "Flash WP"
 
 echo
-echo "----- CCD Capabilities -----"
-gsctool -a -I 2>/dev/null | grep -E "FlashAP|AllowUnverifiedRo|OverrideWP|Open"
+echo -e "${GREEN}----- CCD Capabilities -----${NC}"
+gsctool -a -I 2>/dev/null | grep -E "FlashAP|FlashEC|OverrideWP|Open"
 
 echo
-echo "----- SPI Flash Chip -----"
-flashrom --wp-status 2>/dev/null
+echo -e "${GREEN}----- SPI Flash Chip (Important Messages Only) -----${NC}"
+flashrom --wp-status 2>/dev/null | grep -E "enabled|disabled"
 
 echo
-echo "----- Kernel WP Messages -----"
-dmesg | grep -i wp | tail -n 10
+echo -e "${GREEN}----- Kernel WP Messages (Important Only) -----${NC}"
+dmesg | grep -i wp | tail -n 5
 
 echo
-echo "----- Firmware Read Test -----"
+echo -e "${GREEN}----- Firmware Read Test -----${NC}"
 flashrom -p host -r /tmp/wp_test_backup.bin 2>/dev/null
 
 if [ $? -eq 0 ]; then
-    echo "Flash read SUCCESS (SPI access works)"
+    echo -e "${GREEN}Flash read SUCCESS (SPI access works)${NC}"
     rm -f /tmp/wp_test_backup.bin
 else
-    echo "Flash read FAILED"
+    echo -e "${RED}Flash read FAILED${NC}"
 fi
 
 echo
-echo "=================================="
-echo "           DONE"
-echo "=================================="
+echo -e "${YELLOW}==================================${NC}"
+echo -e "${YELLOW}           DONE${NC}"
+echo -e "${YELLOW}==================================${NC}"
