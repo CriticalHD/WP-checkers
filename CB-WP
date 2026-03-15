@@ -53,7 +53,6 @@ flashrom --wp-status 2>/dev/null | grep -E "enabled|disabled" || echo -e "${RED}
 # ---- Kernel WP / HWP Messages ----
 echo
 echo -e "${GREEN}----- Kernel WP / HWP Messages (Important Only) -----${NC}"
-echo -e "${YELLOW}Note: Only events or transitions will appear here.${NC}"
 dmesg | grep -iE "write-protect|wp:|WP:|HWP" | tail -n 5 || echo -e "${RED}No relevant WP or HWP kernel messages${NC}"
 
 # ---- Firmware Read Test ----
