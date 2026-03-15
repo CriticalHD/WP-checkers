@@ -1,11 +1,11 @@
 #!/bin/bash
 # ==================================
 #      CHROMEBOOK WP DIAGNOSTIC
-#      Version: 8
+#      Version: 9
 # ==================================
 
 # Make version number visible at the top
-echo -e "\033[1;36mChromebook WP Diagnostic Script - Version 8\033[0m"
+echo -e "\033[1;36mChromebook WP Diagnostic Script - Version 9\033[0m"
 
 # Color codes
 RED='\033[0;31m'
@@ -34,7 +34,11 @@ echo -e "dev_boot_signed_only: ${dev_signed} → $( [ "$dev_signed" -eq 1 ] && e
 # ---- GSC / Ti50 Status ----
 echo
 echo -e "${GREEN}----- GSC / Ti50 Status -----${NC}"
-gsctool -a -w 2>/dev/null | grep -E "Flash WP"
+gsctool -a -w 2>/dev/null | while read -r line; do
+    if [[ -n "$line" ]]; then
+        echo -e "${YELLOW}$line${NC}"
+    fi
+done
 
 # ---- CCD Capabilities ----
 echo
@@ -43,7 +47,7 @@ gsctool -a -I 2>/dev/null | grep -v "UartGSC" | while read -r line; do
     name=$(echo "$line" | awk '{print $1}')
     value=$(echo "$line" | awk '{print $2}')
 
-    # Convert numeric/state to human readable with full color coding
+    # Interpret numeric and letter values with correct color coding
     case "$value" in
         0) state="${RED}Never${NC}";;
         1) state="${BLUE}If Opened${NC}";;
