@@ -14,33 +14,43 @@ echo -e "${YELLOW}==================================${NC}"
 echo -e "${YELLOW}      CHROMEBOOK WP DIAGNOSTIC${NC}"
 echo -e "${YELLOW}==================================${NC}"
 
+# ---- CROSSYSTEM (Firmware view) ----
 echo
-echo -e "${GREEN}----- CROSSYSTEM (Firmware view) -----${NC}"
+echo -e "${GREEN}----- CROSSYSTEM (Firmware / DevMode info) -----${NC}"
 crossystem wpsw_cur 2>/dev/null
+crossystem devsw_cur 2>/dev/null
+crossystem dev_boot_usb 2>/dev/null
+crossystem dev_boot_signed_only 2>/dev/null
 
+# ---- GSC / Ti50 Status ----
 echo
 echo -e "${GREEN}----- GSC / Ti50 Status -----${NC}"
 gsctool -a -w 2>/dev/null | grep -E "Flash WP"
 
+# ---- CCD Capabilities ----
 echo
 echo -e "${GREEN}----- CCD Capabilities -----${NC}"
 gsctool -a -I 2>/dev/null | grep -E "FlashAP|FlashEC|OverrideWP|Open"
 
+# ---- SPI Flash Chip ----
 echo
-echo -e "${GREEN}----- SPI Flash Chip (Important Messages Only) -----${NC}"
+echo -e "${GREEN}----- SPI Flash Chip (Important Only) -----${NC}"
 flashrom --wp-status 2>/dev/null | grep -E "enabled|disabled" || echo -e "${RED}SPI flash status unavailable${NC}"
 
+# ---- Kernel WP Messages ----
 echo
 echo -e "${GREEN}----- Kernel WP Messages (Important Only) -----${NC}"
-dmesg | grep -i wp | grep -E "write-protect|wp" | tail -n 3 || echo -e "${RED}No relevant WP kernel messages${NC}"
+dmesg | grep -i wp | grep -E "write-protect|wp:|WP:" | tail -n 3 || echo -e "${RED}No relevant WP kernel messages${NC}"
 
+# ---- Firmware Read Test ----
 echo
 echo -e "${GREEN}----- Firmware Read Test (SPI Only) -----${NC}"
-if flashrom -p host -r /tmp/wp_test_backup.bin 2>/dev/null | grep -q "Written"; then
-    echo -e "${RED}Firmware read may have failed (unexpected output)${NC}"
-else
+TMPFILE=$(mktemp)
+if flashrom -p host -r "$TMPFILE" >/dev/null 2>&1; then
     echo -e "${GREEN}Flash read SUCCESS (SPI access works)${NC}"
-    rm -f /tmp/wp_test_backup.bin
+    rm -f "$TMPFILE"
+else
+    echo -e "${RED}Flash read FAILED${NC}"
 fi
 
 echo
