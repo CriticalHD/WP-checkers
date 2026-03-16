@@ -138,6 +138,7 @@ downloads="/home/chronos/user/Downloads"
 mkdir -p "$downloads"
 
 # Print header once
+echo -e 
 echo -e "${CYAN}===== PAYLOAD MENU =====${NC}"
 tput sc  # save cursor for payload options
 
