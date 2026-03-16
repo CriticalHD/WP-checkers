@@ -42,6 +42,7 @@ if [ -n "$flash_wp" ]; then
 else
     echo -e "${RED}Flash WP status unavailable${NC}"
 fi
+echo
 
 # ---- CCD Information ----
 echo -e "${GREEN}----- CCD Information -----${NC}"
