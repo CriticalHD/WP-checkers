@@ -1,7 +1,7 @@
 #!/bin/bash
 # ==================================
 #      CHROMEBOOK WP DIAGNOSTIC
-#      Version: 11.3
+#      Version: 11.4
 # ==================================
 
 # Colors
@@ -13,19 +13,27 @@ YELLOW='\033[1;33m'
 NC='\033[0m'
 
 echo -e "${CYAN}==================================${NC}"
-echo -e "${CYAN} Chromebook WP Diagnostic v11.3${NC}"
+echo -e "${CYAN} Chromebook WP Diagnostic v11.4${NC}"
 echo -e "${CYAN}==================================${NC}"
 
 echo
 echo -e "${GREEN}----- CCD Status -----${NC}"
 
-ccd_mode=$(gsctool -a -W 2>/dev/null | grep -i ccd_mode | grep -o '[0-2]' | head -n1)
+ccd_mode=$(gsctool -a -W 2>/dev/null | awk '/ccd_mode/ {print $2}')
 
 case "$ccd_mode" in
-    0) echo -e "CCD Mode: ${RED}Locked / Closed${NC}" ;;
-    1) echo -e "CCD Mode: ${GREEN}Opened${NC}" ;;
-    2) echo -e "CCD Mode: ${BLUE}Debug${NC}" ;;
-    *) echo -e "CCD Mode: ${YELLOW}Unknown${NC}" ;;
+0)
+echo -e "CCD Mode: ${RED}Locked / Closed${NC}"
+;;
+1)
+echo -e "CCD Mode: ${GREEN}Opened${NC}"
+;;
+2)
+echo -e "CCD Mode: ${BLUE}Debug${NC}"
+;;
+*)
+echo -e "CCD Mode: ${YELLOW}Unknown${NC}"
+;;
 esac
 
 
@@ -33,18 +41,28 @@ echo
 echo -e "${GREEN}----- CCD Important Capabilities -----${NC}"
 
 get_cap() {
-    cap="$1"
 
-    value=$(gsctool -a -I 2>/dev/null | grep "$cap" | grep -o '[0-2]' | head -n1)
+cap="$1"
 
-    case "$value" in
-        0) state="${RED}Never${NC}" ;;
-        1) state="${BLUE}If Opened${NC}" ;;
-        2) state="${GREEN}Always${NC}" ;;
-        *) state="${YELLOW}Unknown${NC}" ;;
-    esac
+value=$(gsctool -a -I 2>/dev/null | awk -v c="$cap" '$1==c {print $2}')
 
-    printf "%-20s %b\n" "$cap:" "$state"
+case "$value" in
+Never)
+state="${RED}Never${NC}"
+;;
+IfOpened)
+state="${BLUE}IfOpened${NC}"
+;;
+Always)
+state="${GREEN}Always${NC}"
+;;
+*)
+state="${YELLOW}Unknown${NC}"
+;;
+esac
+
+printf "%-20s %b\n" "$cap:" "$state"
+
 }
 
 get_cap AllowUnverifiedRo
@@ -60,13 +78,12 @@ echo -e "${GREEN}----- GSC Flash Write Protect -----${NC}"
 flash_wp=$(gsctool -a -w 2>/dev/null | grep -i "Flash WP")
 
 if echo "$flash_wp" | grep -qi enabled; then
-    echo -e "Flash WP: ${RED}Enabled${NC}"
+echo -e "Flash WP: ${RED}Enabled${NC}"
 elif echo "$flash_wp" | grep -qi disabled; then
-    echo -e "Flash WP: ${GREEN}Disabled${NC}"
+echo -e "Flash WP: ${GREEN}Disabled${NC}"
 else
-    echo -e "Flash WP: ${YELLOW}Unknown${NC}"
+echo -e "Flash WP: ${YELLOW}Unknown${NC}"
 fi
-
 
 echo
 echo -e "${CYAN}==================================${NC}"
