@@ -1,7 +1,7 @@
 #!/bin/bash
 # ==================================
 #      CHROMEBOOK WP DIAGNOSTIC
-#      Version: 32 (FAST GBB)
+#      Version: 32 
 # ==================================
 
 # ---------- COLORS ----------
@@ -29,7 +29,7 @@ print_diagnostics() {
     dev_usb=$(crossystem dev_boot_usb 2>/dev/null)
     dev_signed=$(crossystem dev_boot_signed_only 2>/dev/null)
 
-    # ---------- FAST GBB FLAGS CHECK ----------
+    # ---------- GBB FLAGS CHECK ----------
     gbb_flags="unknown"
     gbb_modified=0
 
