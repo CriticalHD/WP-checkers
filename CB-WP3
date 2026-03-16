@@ -184,37 +184,45 @@ while true; do
 
     case "$choice" in
         1)
-            TMPFILE=$(mktemp)
-            {
-                echo "===== VT2 DIAGNOSTIC LOG ====="
-                date
-                echo
-                echo "---- CROSSYSTEM ----"
-                crossystem
-                echo
-                echo "---- GSC ----"
-                gsctool -a -I
-                echo
-                echo "---- KERNEL ----"
-                dmesg
-            } > "$TMPFILE"
+    TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+    LOCALFILE="$downloads/vt2_log_$TIMESTAMP.log"
 
-            echo -e "${CYAN}Uploading log via transfer.sh...${NC}"
-            UPLOAD_URL=$(curl -s -f --retry 3 --upload-file "$TMPFILE" "https://transfer.sh/vt2_log_$(date +%s).log")
-            if [[ "$UPLOAD_URL" == http* ]]; then
-                FILESIZE=$(du -h "$TMPFILE" | awk '{print $1}')
-                echo -e "${GREEN}Log uploaded successfully!${NC}"
-                echo -e "${MAGENTA}URL:${NC} $UPLOAD_URL"
-                echo -e "${MAGENTA}Size:${NC} $FILESIZE"
-            else
-                LOCALFILE="$downloads/vt2_log_$(date +%s).log"
-                cp "$TMPFILE" "$LOCALFILE"
-                echo -e "${RED}Upload failed.${NC}"
-                echo -e "${YELLOW}Saved log locally to: ${MAGENTA}$LOCALFILE${NC}"
-            fi
-            rm -f "$TMPFILE"
-            read -n1 -rp "Press any key to return to menu..." </dev/tty
-        ;;
+    echo -e "${CYAN}Generating VT2 Diagnostic Log...${NC}"
+
+    # Write diagnostic log directly to Downloads
+    {
+        echo "===== VT2 DIAGNOSTIC LOG ====="
+        date
+        echo
+        echo "---- CROSSYSTEM ----"
+        crossystem
+        echo
+        echo "---- GSC ----"
+        gsctool -a -I
+        echo
+        echo "---- KERNEL ----"
+        dmesg
+    } > "$LOCALFILE"
+
+    echo -e "${CYAN}Uploading log via transfer.sh...${NC}"
+
+    # Attempt upload
+    UPLOAD_URL=$(curl -s -f --retry 3 --upload-file "$LOCALFILE" "https://transfer.sh/vt2_log_$TIMESTAMP.log" 2>/dev/null)
+
+    if [[ "$UPLOAD_URL" == http* ]]; then
+        FILESIZE=$(du -h "$LOCALFILE" | awk '{print $1}')
+        echo -e "${GREEN}Log uploaded successfully!${NC}"
+        echo -e "${MAGENTA}URL:${NC} $UPLOAD_URL"
+        echo -e "${MAGENTA}Size:${NC} $FILESIZE"
+        # Optional: remove local file if upload succeeds
+        # rm -f "$LOCALFILE"
+    else
+        echo -e "${RED}Upload failed.${NC}"
+        echo -e "${YELLOW}Saved log locally to: ${MAGENTA}$LOCALFILE${NC}"
+    fi
+
+    read -n1 -rp "Press any key to return to menu..." </dev/tty
+;;
         2)
             echo -e "${CYAN}Setting CCD capabilities to Always...${NC}"
             gsctool -a -I FlashAP:always
