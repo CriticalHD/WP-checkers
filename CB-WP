@@ -58,14 +58,28 @@ gsctool -a -I 2>/dev/null | grep -v "UartGSC" | while read -r line; do
 done
 
 # ---- SPI Flash Chip ----
-echo
-echo -e "${GREEN}----- SPI Flash Chip (Important Only) -----${NC}"
-flashrom --wp-status 2>/dev/null | grep -E "enabled|disabled" || echo -e "${RED}SPI flash status unavailable${NC}"
+echo -e "\n${GREEN}----- SPI Flash Chip (Important Only) -----${NC}"
+if command -v flashrom >/dev/null 2>&1; then
+    flash_status=$(flashrom --wp-status 2>/dev/null | grep -E "enabled|disabled")
+    if [ -n "$flash_status" ]; then
+        echo -e "${MAGENTA}$flash_status${NC}"
+    else
+        echo -e "${RED}SPI flash status unavailable${NC}"
+    fi
+else
+    echo -e "${RED}flashrom not installed${NC}"
+fi
 
 # ---- Kernel WP / HWP Messages ----
 echo
-echo -e "${GREEN}----- Kernel WP / HWP Messages (Important Only) -----${NC}"
-dmesg | grep -iE "write-protect|wp:|WP:|HWP" | tail -n 5 || echo -e "${RED}No relevant WP or HWP kernel messages${NC}"
+echo -e "\n${GREEN}----- Kernel WP / HWP Messages (Important Only) -----${NC}"
+kernel_msgs=$(dmesg | grep -iE "write-protect|wp:|WP:|HWP" | tail -n 5)
+if [ -n "$kernel_msgs" ]; then
+    echo -e "${CYAN}$kernel_msgs${NC}"
+else
+    echo -e "${RED}No relevant WP or HWP kernel messages${NC}"
+fi
+
 
 # ---- Firmware Read Test ----
 echo
