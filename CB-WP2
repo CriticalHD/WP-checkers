@@ -47,7 +47,10 @@ gsctool -a -I 2>/dev/null \
     | grep -vE "UartGSC|CCD:|Capabilities|default:" \
     | grep -v "^$" \
     | while read -r line; do
-        # Ignore lines that are just numbers or malformed
+        # Remove any leading single-letter flags (Y:, N:, etc.)
+        line=$(echo "$line" | sed 's/^[YN]:[[:space:]]*//')
+
+        # Ignore lines that are malformed or headers
         [[ "$line" =~ ^[[:space:]]*$ ]] && continue
         [[ "$line" =~ : ]] && continue
 
