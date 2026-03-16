@@ -93,7 +93,7 @@ get_cap GscFullConsole
 
 
 echo
-# ---- SPI Flash Chip ----
+# ---- SPI Flash Chip / Flashrom ----
 echo -e "\n${GREEN}----- SPI Flash Chip -----${NC}"
 if command -v flashrom >/dev/null 2>&1; then
     flash_status=$(flashrom --wp-status 2>/dev/null | grep -E "enabled|disabled")
@@ -121,7 +121,7 @@ fi
 echo
 echo -e "${GREEN}----- Firmware Read Test (SPI Only) -----${NC}"
 TMPFILE=$(mktemp)
-if flashrom -p host -r "$TMPFILE" >/dev/null 2>&1; then
+if flashrom -p internal -r "$TMPFILE" >/dev/null 2>&1; then
     echo -e "${GREEN}Flash read SUCCESS (SPI access works)${NC}"
     rm -f "$TMPFILE"
 else
