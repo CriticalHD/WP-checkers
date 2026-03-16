@@ -1,0 +1,279 @@
+#!/bin/bash
+# ==================================
+#      CHROMEBOOK WP DIAGNOSTIC
+#      Version: 30 
+# ==================================
+
+# ---------- COLORS ----------
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+MAGENTA='\033[0;35m'
+NC='\033[0m'
+
+clear
+echo -e "\033[1;36mChromebook WP Diagnostic Script - Version 30\033[0m"
+echo -e "${YELLOW}==================================${NC}"
+echo -e "${YELLOW}      CHROMEBOOK WP DIAGNOSTIC${NC}"
+echo -e "${YELLOW}==================================${NC}"
+
+# ---------- FUNCTIONS ----------
+print_diagnostics() {
+    echo -e "\n${GREEN}----- CROSSYSTEM (Firmware / DevMode info) -----${NC}"
+    wpsw=$(crossystem wpsw_cur 2>/dev/null)
+    devsw=$(crossystem devsw_cur 2>/dev/null)
+    dev_usb=$(crossystem dev_boot_usb 2>/dev/null)
+    dev_signed=$(crossystem dev_boot_signed_only 2>/dev/null)
+
+    echo -e "wpsw_cur: ${YELLOW}$wpsw${NC} → $( [ "$wpsw" -eq 1 ] && echo -e "${RED}Flash write-protect ENABLED${NC}" || echo -e "${GREEN}Flash write-protect DISABLED${NC}" )"
+    echo -e "devsw_cur: ${YELLOW}$devsw${NC} → $( [ "$devsw" -eq 1 ] && echo -e "${GREEN}Developer Switch ON${NC}" || echo -e "${RED}Developer Switch OFF${NC}" )"
+    echo -e "dev_boot_usb: ${YELLOW}$dev_usb${NC} → $( [ "$dev_usb" -eq 1 ] && echo -e "${GREEN}USB boot allowed${NC}" || echo -e "${RED}USB boot disabled${NC}" )"
+    echo -e "dev_boot_signed_only: ${YELLOW}$dev_signed${NC} → $( [ "$dev_signed" -eq 1 ] && echo -e "${RED}Boot signed-only enforced${NC}" || echo -e "${GREEN}Unsigned boot allowed${NC}" )"
+
+    echo -e "\n${GREEN}----- GSC / Ti50 Status -----${NC}"
+    flash_wp=$(gsctool -a -w 2>/dev/null | grep -i "Flash WP" | awk '{print $3}')
+    if [ -n "$flash_wp" ]; then
+        color=$( [ "$flash_wp" == "enabled" ] && echo "${RED}" || echo "${GREEN}" )
+        echo -e "Flash WP: ${color}${flash_wp^}${NC}"
+    else
+        echo -e "${RED}Flash WP status unavailable${NC}"
+    fi
+
+    echo -e "\n${GREEN}----- CCD Information -----${NC}"
+    GSC_I=$(gsctool -a -I 2>/dev/null)
+    GSC_W=$(gsctool -a -W 2>/dev/null)
+
+    ccd_mode=$(echo "$GSC_W" | grep -i ccd_mode | tr -dc '0-9')
+    echo -e "${YELLOW}CCD Mode is SPI Flash CCD Mode only${NC}"
+    case "$ccd_mode" in
+        0) echo -e "CCD Mode: ${RED}Locked / Closed${NC}" ;;
+        1) echo -e "CCD Mode: ${GREEN}Opened${NC}" ;;
+        2) echo -e "CCD Mode: ${BLUE}Debug${NC}" ;;
+        *) echo -e "CCD Mode: ${YELLOW}Unknown${NC}" ;;
+    esac
+
+    ccd_state=$(echo "$GSC_I" | grep -i "^State" | awk '{print $2}')
+    case "$ccd_state" in
+        Locked) echo -e "CCD State: ${RED}Locked${NC}" ;;
+        Opened|Open) echo -e "CCD State: ${GREEN}Opened${NC}" ;;
+        Unlocked) echo -e "CCD State: ${GREEN}Unlocked${NC}" ;;
+        Debug) echo -e "CCD State: ${BLUE}Debug${NC}" ;;
+        *) echo -e "CCD State: ${YELLOW}Unknown${NC}" ;;
+    esac
+
+    get_cap() {
+        cap="$1"
+        line=$(echo "$GSC_I" | grep -i "$cap")
+        line=$(echo "$line" | sed 's/^[YNyn] *//')
+        state=$(echo "$line" | grep -oE 'Never|IfOpened|Always|0|1|2' | head -n1)
+        case "$state" in
+            Never|0) out="${RED}Never${NC}" ;;
+            IfOpened|1) out="${BLUE}IfOpened${NC}" ;;
+            Always|2) out="${GREEN}Always${NC}" ;;
+            *) out="${YELLOW}Unknown${NC}" ;;
+        esac
+        printf "%-20s %b\n" "$cap:" "$out"
+    }
+
+    echo
+    get_cap AllowUnverifiedRo
+    get_cap OverrideWP
+    get_cap FlashAP
+    get_cap FlashRead
+    get_cap GscFullConsole
+
+    echo -e "\n${GREEN}----- SPI Flash Status -----${NC}"
+    if command -v flashrom >/dev/null 2>&1; then
+        flash_status=$(flashrom --wp-status 2>/dev/null | grep -E "enabled|disabled")
+        if [ -n "$flash_status" ]; then
+            echo -e "${MAGENTA}$flash_status${NC}"
+        else
+            echo -e "${RED}SPI flash status unavailable${NC}"
+        fi
+    else
+        echo -e "${RED}flashrom not installed${NC}"
+    fi
+
+    echo -e "\n${GREEN}----- Kernel Messages -----${NC}"
+    kernel_msgs=$(dmesg | grep -iE "write-protect|wp:|WP:|HWP" | tail -n 10)
+    if [ -n "$kernel_msgs" ]; then
+        echo -e "${CYAN}$kernel_msgs${NC}"
+    else
+        echo -e "${RED}No relevant WP or HWP kernel messages${NC}"
+    fi
+
+    echo -e "\n${GREEN}----- Firmware Read Test (SPI Only) -----${NC}"
+    TMPFILE=$(mktemp)
+    flashrom -p internal -r "$TMPFILE" >/dev/null 2>&1 &
+    FR_PID=$!
+    spinner="/-\|"
+    i=0
+    tput civis
+    while kill -0 $FR_PID 2>/dev/null; do
+        i=$(( (i+1) % 4 ))
+        printf "\r\033[1;33mReading SPI flash... %s\033[0m" "${spinner:$i:1}"
+        sleep 0.2
+    done
+    wait $FR_PID
+    FR_STATUS=$?
+    tput cnorm
+    echo -ne "\r\033[K"
+    if [ $FR_STATUS -eq 0 ]; then
+        echo -e "${GREEN}Flash read SUCCESS (SPI access works)${NC}"
+    else
+        echo -e "${RED}Flash read FAILED${NC}"
+    fi
+    rm -f "$TMPFILE"
+}
+
+# ---------- INITIAL DIAGNOSTICS ----------
+print_diagnostics
+
+# ---------- PAYLOAD MENU ----------
+[[ "$ccd_state" == "Locked" ]] && CCD_WARN="${RED}[CCD LOCKED]${NC}" || CCD_WARN=""
+downloads="/home/chronos/user/Downloads"
+mkdir -p "$downloads"
+
+echo
+echo -e "${CYAN}===== PAYLOAD MENU =====${NC}"
+tput sc
+
+while true; do
+    tput rc
+    tput ed
+
+    echo
+    echo -e "${GREEN}[1]${NC} Generate & Upload VT2 Diagnostic Log"
+    echo -e "${GREEN}[2]${NC} Set Important CCD Capabilities to Always ${CCD_WARN}"
+    echo -e "${GREEN}[3]${NC} Firmware Flash Safety Check"
+    echo -e "${YELLOW}[e]${NC} Exit to VT2"
+    echo
+
+    read -n1 -rp "Choice: " choice </dev/tty
+    echo
+
+    case "$choice" in
+
+        1)
+            TMPFILE=$(mktemp)
+            {
+                echo "===== VT2 DIAGNOSTIC LOG ====="
+                date
+                echo
+                echo "---- CROSSYSTEM ----"
+                crossystem
+                echo
+                echo "---- GSC ----"
+                gsctool -a -I
+                echo
+                echo "---- KERNEL ----"
+                dmesg
+            } > "$TMPFILE"
+
+            echo -e "${CYAN}Uploading log via transfer.sh...${NC}"
+            UPLOAD_URL=$(curl -s -f --retry 3 --upload-file "$TMPFILE" "https://transfer.sh/vt2_log_$(date +%s).log")
+            if [[ "$UPLOAD_URL" == http* ]]; then
+                FILESIZE=$(du -h "$TMPFILE" | awk '{print $1}')
+                echo -e "${GREEN}Log uploaded successfully!${NC}"
+                echo -e "${MAGENTA}URL:${NC} $UPLOAD_URL"
+                echo -e "${MAGENTA}Size:${NC} $FILESIZE"
+            else
+                LOCALFILE="$downloads/vt2_log_$(date +%s).log"
+                cp "$TMPFILE" "$LOCALFILE"
+                echo -e "${RED}Upload failed.${NC}"
+                echo -e "${YELLOW}Saved log locally to: ${MAGENTA}$LOCALFILE${NC}"
+            fi
+            rm -f "$TMPFILE"
+
+            read -n1 -rp "Press any key to return to menu..." </dev/tty
+        ;;
+
+        2)
+            echo -e "${CYAN}Setting CCD capabilities to Always...${NC}"
+            gsctool -a -I FlashAP:always
+            gsctool -a -I OverrideWP:always
+            gsctool -a -I GscFullConsole:always
+            gsctool -a -I OpenNoLongPP:always
+            gsctool -a -I OpenNoDevMode:always
+            gsctool -a -I AllowUnverifiedRo:always
+            echo -e "${GREEN}CCD capabilities updated successfully!${NC}"
+
+            read -n1 -rp "Press any key to return to menu..." </dev/tty
+        ;;
+
+        3)
+            echo -e "${CYAN}Running Firmware Flash Safety Check...${NC}"
+            echo
+
+            SAFE=1
+
+            echo -e "${GREEN}Checking Hardware Write Protect...${NC}"
+            wpsw=$(crossystem wpsw_cur 2>/dev/null)
+
+            if [ "$wpsw" -eq 1 ]; then
+                echo -e "Hardware WP: ${RED}ENABLED${NC}"
+                SAFE=0
+            else
+                echo -e "Hardware WP: ${GREEN}DISABLED${NC}"
+            fi
+
+            echo
+            echo -e "${GREEN}Checking GSC Flash Write Protect...${NC}"
+            flash_wp=$(gsctool -a -w 2>/dev/null | grep -i "Flash WP" | awk '{print $3}')
+
+            if [[ "$flash_wp" == "enabled" ]]; then
+                echo -e "GSC Flash WP: ${RED}ENABLED${NC}"
+                SAFE=0
+            else
+                echo -e "GSC Flash WP: ${GREEN}DISABLED${NC}"
+            fi
+
+            echo
+            echo -e "${GREEN}Checking CCD Flash Permissions...${NC}"
+            flashap=$(gsctool -a -I 2>/dev/null | grep -i FlashAP)
+
+            if echo "$flashap" | grep -qi "Always"; then
+                echo -e "FlashAP Capability: ${GREEN}Always${NC}"
+            else
+                echo -e "FlashAP Capability: ${YELLOW}Restricted${NC}"
+            fi
+
+            echo
+            echo -e "${GREEN}Testing SPI Flash Read Access...${NC}"
+            TMPFILE=$(mktemp)
+
+            if flashrom -p internal -r "$TMPFILE" >/dev/null 2>&1; then
+                echo -e "SPI Access: ${GREEN}WORKING${NC}"
+            else
+                echo -e "SPI Access: ${RED}FAILED${NC}"
+                SAFE=0
+            fi
+
+            rm -f "$TMPFILE"
+
+            echo
+            echo -e "${CYAN}===== RESULT =====${NC}"
+
+            if [ "$SAFE" -eq 1 ]; then
+                echo -e "${GREEN}SAFE TO FLASH FIRMWARE${NC}"
+            else
+                echo -e "${RED}NOT SAFE TO FLASH FIRMWARE${NC}"
+            fi
+
+            echo
+            read -n1 -rp "Press any key to return to menu..." </dev/tty
+        ;;
+
+        e|E)
+            echo -e "${YELLOW}Exiting payload menu...${NC}"
+            break
+        ;;
+
+        *)
+            echo -e "${RED}Invalid option, please try again.${NC}"
+            sleep 1
+        ;;
+    esac
+done
