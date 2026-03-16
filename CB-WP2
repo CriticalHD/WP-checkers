@@ -1,7 +1,7 @@
 #!/bin/bash
 # ==================================
 #      CHROMEBOOK WP DIAGNOSTIC
-#      Version: 10.6
+#      Version: 10.7
 # ==================================
 
 # ---- COLOR CODES ----
@@ -15,7 +15,7 @@ NC='\033[0m'
 
 # ---- HEADER ----
 echo -e "${CYAN}==================================${NC}"
-echo -e "${CYAN}  Chromebook WP Diagnostic v10.6  ${NC}"
+echo -e "${CYAN}  Chromebook WP Diagnostic v10.7  ${NC}"
 echo -e "${CYAN}==================================${NC}"
 
 # ---- CROSSYSTEM (Firmware / DevMode info) ----
