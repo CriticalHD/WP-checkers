@@ -193,12 +193,12 @@ while true; do
         ;;
         2)
             echo -e "${CYAN}Setting CCD capabilities to Always...${NC}"
-            gsctool -a -o FlashAP
-            gsctool -a -o OverrideWP
-            gsctool -a -o GscFullConsole
-            gsctool -a -o OpenNoLongPP
-            gsctool -a -o OpenNoDevMode
-            gsctool -a -o AllowUnverifiedRo
+            gsctool -a -I FlashAP:always
+            gsctool -a -I OverrideWP:always
+            gsctool -a -I GscFullConsole:always
+            gsctool -a -I OpenNoLongPP:always
+            gsctool -a -I OpenNoDevMode:always
+            gsctool -a -I AllowUnverifiedRo:always
             echo -e "${GREEN}CCD capabilities updated.${NC}"
         ;;
         e|E)
