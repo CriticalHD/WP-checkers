@@ -1,11 +1,11 @@
 #!/bin/bash
 # ==================================
 #      CHROMEBOOK WP DIAGNOSTIC
-#      Version: 15
+#      Version: 16
 # ==================================
 
 # Make version number visible at the top
-echo -e "\033[1;36mChromebook WP Diagnostic Script - Version 15\033[0m"
+echo -e "\033[1;36mChromebook WP Diagnostic Script - Version 16\033[0m"
 
 # Color codes
 RED='\033[0;31m'
@@ -109,7 +109,7 @@ fi
 
 # ---- Kernel WP ----
 echo
-echo -e "\n${GREEN}----- Kernel WP / HWP Messages (Important Only) -----${NC}"
+echo -e "\n${GREEN}----- Kernel WP / HWP Messages -----${NC}"
 kernel_msgs=$(dmesg | grep -iE "write-protect|wp:|WP:|HWP" | tail -n 5)
 if [ -n "$kernel_msgs" ]; then
     echo -e "${CYAN}$kernel_msgs${NC}"
