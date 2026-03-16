@@ -1,7 +1,7 @@
 #!/bin/bash
 # ==================================
 #      CHROMEBOOK WP DIAGNOSTIC
-#      Version: 11
+#      Version: 11.1
 # ==================================
 
 # ---- COLORS ----
@@ -13,17 +13,17 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 
 echo -e "${CYAN}==================================${NC}"
-echo -e "${CYAN} Chromebook WP Diagnostic v11${NC}"
+echo -e "${CYAN} Chromebook WP Diagnostic v11.1${NC}"
 echo -e "${CYAN}==================================${NC}"
 
 # ------------------------------
-# CCD MODE CHECK
+# CCD MODE
 # ------------------------------
 
 echo
 echo -e "${GREEN}----- CCD Status -----${NC}"
 
-ccd_mode=$(gsctool -a -W 2>/dev/null | grep -i ccd_mode | awk '{print $2}')
+ccd_mode=$(gsctool -a -W 2>/dev/null | grep -i ccd_mode | grep -o '[0-9]')
 
 case "$ccd_mode" in
     0)
@@ -40,18 +40,22 @@ case "$ccd_mode" in
         ;;
 esac
 
+
 # ------------------------------
-# CCD CAPABILITIES (ONLY IMPORTANT)
+# CCD CAPABILITIES
 # ------------------------------
 
 echo
 echo -e "${GREEN}----- CCD Important Capabilities -----${NC}"
 
-check_cap () {
+check_cap() {
 
-cap=$(gsctool -a -I 2>/dev/null | grep "$1" | awk '{print $NF}')
+line=$(gsctool -a -I 2>/dev/null | grep "$1")
 
-case "$cap" in
+# Extract first number in the line
+value=$(echo "$line" | grep -o '[0-2]' | head -n1)
+
+case "$value" in
     0)
         state="${RED}Never${NC}"
         ;;
@@ -61,18 +65,12 @@ case "$cap" in
     2)
         state="${GREEN}Always${NC}"
         ;;
-    Y|y)
-        state="${GREEN}Enabled${NC}"
-        ;;
-    N|n)
-        state="${RED}Disabled${NC}"
-        ;;
     *)
         state="${YELLOW}Unknown${NC}"
         ;;
 esac
 
-printf "%-20s %b\n" "$1:" "$state"
+printf "%-22s %b\n" "$1:" "$state"
 
 }
 
@@ -82,14 +80,15 @@ check_cap "FlashAP"
 check_cap "FlashRead"
 check_cap "GscFullConsole"
 
+
 # ------------------------------
-# GSC FLASH WRITE PROTECT
+# FLASH WRITE PROTECT
 # ------------------------------
 
 echo
 echo -e "${GREEN}----- GSC Flash Write Protect -----${NC}"
 
-flash_wp=$(gsctool -a -w 2>/dev/null | grep "Flash WP" | awk '{print $3}')
+flash_wp=$(gsctool -a -w 2>/dev/null | grep "Flash WP" | grep -oE 'enabled|disabled')
 
 if [[ "$flash_wp" == "enabled" ]]; then
     echo -e "Flash WP: ${RED}Enabled${NC}"
@@ -98,6 +97,7 @@ elif [[ "$flash_wp" == "disabled" ]]; then
 else
     echo -e "Flash WP: ${YELLOW}Unknown${NC}"
 fi
+
 
 echo
 echo -e "${CYAN}==================================${NC}"
