@@ -1,0 +1,129 @@
+#!/bin/bash
+# ==================================
+#  CHROMEOS FIRMWARE FORENSIC TOOL
+#        Version 1.0 (Read-Only)
+# ==================================
+
+# ---------- COLORS ----------
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+MAGENTA='\033[0;35m'
+NC='\033[0m'
+
+clear
+echo -e "${CYAN}ChromeOS Firmware Forensic Tool - v1.0${NC}"
+echo -e "${YELLOW}==========================================${NC}"
+
+# ---------- FUNCTIONS ----------
+print_diagnostics() {
+
+    echo -e "\n${GREEN}----- CROSSYSTEM INFO -----${NC}"
+    wpsw=$(crossystem wpsw_cur 2>/dev/null)
+    devsw=$(crossystem devsw_cur 2>/dev/null)
+    dev_usb=$(crossystem dev_boot_usb 2>/dev/null)
+    dev_signed=$(crossystem dev_boot_signed_only 2>/dev/null)
+
+    echo -e "wpsw_cur: ${YELLOW}$wpsw${NC} → $( [ "$wpsw" -eq 1 ] && echo -e "${RED}WP ENABLED${NC}" || echo -e "${GREEN}WP DISABLED${NC}" )"
+    echo -e "devsw_cur: ${YELLOW}$devsw${NC} → $( [ "$devsw" -eq 1 ] && echo -e "${GREEN}Dev Switch ON${NC}" || echo -e "${RED}Dev Switch OFF${NC}" )"
+    echo -e "dev_boot_usb: ${YELLOW}$dev_usb${NC} → $( [ "$dev_usb" -eq 1 ] && echo -e "${GREEN}USB boot allowed${NC}" || echo -e "${RED}USB boot disabled${NC}" )"
+    echo -e "dev_boot_signed_only: ${YELLOW}$dev_signed${NC} → $( [ "$dev_signed" -eq 1 ] && echo -e "${RED}Boot signed-only enforced${NC}" || echo -e "${GREEN}Unsigned boot allowed${NC}" )"
+
+    # ---------- FAST GBB FLAGS ----------
+    gbb_flags="unknown"
+    gbb_modified=0
+    TMPGBB=$(mktemp)
+
+    if command -v flashrom >/dev/null 2>&1 && command -v futility >/dev/null 2>&1; then
+        flashrom -p internal -i GBB -r "$TMPGBB" >/dev/null 2>&1
+        gbb_flags=$(futility gbb --get --flags "$TMPGBB" 2>/dev/null | awk '{print $2}')
+        if [[ "$gbb_flags" != "0x0" && "$gbb_flags" != "0" && -n "$gbb_flags" ]]; then
+            gbb_modified=1
+        fi
+    fi
+    rm -f "$TMPGBB"
+
+    if [ "$gbb_modified" -eq 1 ]; then
+        echo -e "${YELLOW}GBB Flags detected: $gbb_flags (MODIFIED)${NC}"
+    else
+        echo -e "${GREEN}GBB Flags: $gbb_flags (default)${NC}"
+    fi
+
+    # ---------- CCD INFO ----------
+    echo -e "\n${GREEN}----- CCD INFORMATION -----${NC}"
+    GSC_I=$(gsctool -a -I 2>/dev/null)
+    GSC_W=$(gsctool -a -W 2>/dev/null)
+    ccd_mode=$(echo "$GSC_W" | grep -i ccd_mode | tr -dc '0-9')
+    ccd_state=$(echo "$GSC_I" | grep -i "^State" | awk '{print $2}')
+
+    case "$ccd_mode" in
+        0) echo -e "CCD Mode: ${RED}Locked${NC}" ;;
+        1) echo -e "CCD Mode: ${GREEN}Opened${NC}" ;;
+        2) echo -e "CCD Mode: ${BLUE}Debug${NC}" ;;
+        *) echo -e "CCD Mode: ${YELLOW}Unknown${NC}" ;;
+    esac
+
+    case "$ccd_state" in
+        Locked) echo -e "CCD State: ${RED}Locked${NC}" ;;
+        Opened|Open) echo -e "CCD State: ${GREEN}Opened${NC}" ;;
+        Unlocked) echo -e "CCD State: ${GREEN}Unlocked${NC}" ;;
+        Debug) echo -e "CCD State: ${BLUE}Debug${NC}" ;;
+        *) echo -e "CCD State: ${YELLOW}Unknown${NC}" ;;
+    esac
+
+    get_cap() {
+        cap="$1"
+        line=$(echo "$GSC_I" | grep -i "$cap")
+        line=$(echo "$line" | sed 's/^[YNyn] *//')
+        state=$(echo "$line" | grep -oE 'Never|IfOpened|Always|0|1|2' | head -n1)
+        case "$state" in
+            Never|0) out="${RED}Never${NC}" ;;
+            IfOpened|1) out="${BLUE}IfOpened${NC}" ;;
+            Always|2) out="${GREEN}Always${NC}" ;;
+            *) out="${YELLOW}Unknown${NC}" ;;
+        esac
+        printf "%-20s %b\n" "$cap:" "$out"
+    }
+
+    echo
+    get_cap AllowUnverifiedRo
+    get_cap OverrideWP
+    get_cap FlashAP
+    get_cap FlashRead
+    get_cap GscFullConsole
+
+    # ---------- SPI & ME INSPECTION ----------
+    echo -e "\n${GREEN}----- SPI & ME REGION -----${NC}"
+    if command -v flashrom >/dev/null 2>&1; then
+        SPI_INFO=$(flashrom -p internal -i all 2>/dev/null)
+        ME_PRESENT=$(echo "$SPI_INFO" | grep -i "ME" || echo "")
+
+        if [ -n "$ME_PRESENT" ]; then
+            echo -e "${MAGENTA}Management Engine detected:${NC}"
+            # Check typical ME protections
+            echo -e "${YELLOW}ME blocks:${NC}"
+            echo -e "- Direct flash writes to boot regions"
+            echo -e "- BIOS recovery override unless devmode forced"
+            echo -e "- Some write-protect flags (WP, GBB overrides)"
+        else
+            echo -e "${GREEN}No Intel Management Engine region detected.${NC}"
+        fi
+    else
+        echo -e "${RED}flashrom not installed; cannot inspect SPI/ME${NC}"
+    fi
+
+    # ---------- KERNEL & WP MESSAGES ----------
+    echo -e "\n${GREEN}----- KERNEL MESSAGES -----${NC}"
+    kernel_msgs=$(dmesg | grep -iE "write-protect|wp:|WP:|HWP" | tail -n 10)
+    if [ -n "$kernel_msgs" ]; then
+        echo -e "${CYAN}$kernel_msgs${NC}"
+    else
+        echo -e "${RED}No relevant WP/HWP kernel messages${NC}"
+    fi
+}
+
+# ---------- RUN ----------
+print_diagnostics
+echo -e "\n${CYAN}Forensic scan complete. Review output for any anomalies.${NC}"
