@@ -12,6 +12,8 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+MAGENTA='\033[0;35m'
 NC='\033[0m'
 
 echo -e "${YELLOW}==================================${NC}"
@@ -32,9 +34,14 @@ echo -e "dev_boot_usb: ${YELLOW}$dev_usb${NC} → $( [ "$dev_usb" -eq 1 ] && ech
 echo -e "dev_boot_signed_only: ${YELLOW}$dev_signed${NC} → $( [ "$dev_signed" -eq 1 ] && echo -e "${RED}Boot signed-only enforced${NC}" || echo -e "${GREEN}Unsigned boot allowed${NC}" )"
 
 # ---- GSC / Ti50 Status (Compact) ----
-echo
-echo -e "${GREEN}----- GSC / Ti50 Status (Compact) -----${NC}"
-gsctool -a -w 2>/dev/null | awk '{$1=$1; print}' | paste -sd ", " -
+echo -e "\n${GREEN}----- GSC / Ti50 Status -----${NC}"
+flash_wp=$(gsctool -a -w 2>/dev/null | grep -i "Flash WP" | awk '{print $3}')
+if [ -n "$flash_wp" ]; then
+    color=$( [ "$flash_wp" == "enabled" ] && echo -e "${RED}" || echo -e "${GREEN}" )
+    echo -e "Flash WP: ${color}${flash_wp^}${NC}"  # Capitalize first letter
+else
+    echo -e "${RED}Flash WP status unavailable${NC}"
+fi
 
 # ---- CCD Capabilities (Fixed & Color Coded) ----
 echo
