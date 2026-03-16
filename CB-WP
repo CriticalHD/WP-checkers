@@ -4,7 +4,7 @@
 #      Version: 16
 # ==================================
 
-# Make version number visible at the top
+
 echo -e "\033[1;36mChromebook WP Diagnostic Script - Version 16\033[0m"
 
 # Color codes
@@ -128,15 +128,15 @@ TMPFILE=$(mktemp)
 flashrom -p internal -r "$TMPFILE" >/dev/null 2>&1 &
 FR_PID=$!
 
-# Spinner setup
+# Spin
 spinner="/-\|"
 i=0
 message="Reading SPI flash (this may take a while) "
 
-# Hide cursor
+
 tput civis
 
-# Spinner loop
+# Spin 
 while kill -0 $FR_PID 2>/dev/null; do
     i=$(( (i+1) % 4 ))
     # Print message in yellow and spinner in yellow, no extra NC inside
@@ -147,10 +147,10 @@ done
 wait $FR_PID
 FR_STATUS=$?
 
-# Show cursor again
+
 tput cnorm
 
-# Clear line
+
 echo -ne "\r\033[K"
 
 # Show result
