@@ -137,14 +137,14 @@ print_diagnostics
 downloads="/home/chronos/user/Downloads"
 mkdir -p "$downloads"
 
-# Print header once
+
 echo -e 
 echo -e "${CYAN}===== PAYLOAD MENU =====${NC}"
-tput sc  # save cursor for payload options
+tput sc  
 
 while true; do
     tput rc
-    tput ed  # clear below menu options
+    tput ed  
 
     echo
     echo -e "${GREEN}[1]${NC} Generate & Upload VT2 Diagnostic Log"
