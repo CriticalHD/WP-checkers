@@ -33,7 +33,7 @@ echo -e "devsw_cur: ${YELLOW}$devsw${NC} → $( [ "$devsw" -eq 1 ] && echo -e "$
 echo -e "dev_boot_usb: ${YELLOW}$dev_usb${NC} → $( [ "$dev_usb" -eq 1 ] && echo -e "${GREEN}USB boot allowed${NC}" || echo -e "${RED}USB boot disabled${NC}" )"
 echo -e "dev_boot_signed_only: ${YELLOW}$dev_signed${NC} → $( [ "$dev_signed" -eq 1 ] && echo -e "${RED}Boot signed-only enforced${NC}" || echo -e "${GREEN}Unsigned boot allowed${NC}" )"
 
-# ---- GSC / Ti50 Status (Compact) ----
+# ---- GSC / Ti50 Status ----
 echo -e "\n${GREEN}----- GSC / Ti50 Status -----${NC}"
 flash_wp=$(gsctool -a -w 2>/dev/null | grep -i "Flash WP" | awk '{print $3}')
 if [ -n "$flash_wp" ]; then
@@ -43,29 +43,58 @@ else
     echo -e "${RED}Flash WP status unavailable${NC}"
 fi
 
-# ---- CCD Capabilities (Fixed & Color Coded) ----
+# ---- CCD Information ----
+echo -e "${GREEN}----- CCD Information -----${NC}"
+
+GSC_I=$(gsctool -a -I 2>/dev/null)
+GSC_W=$(gsctool -a -W 2>/dev/null)
+
+# CCD Mode
+ccd_mode=$(echo "$GSC_W" | grep -i ccd_mode | tr -dc '0-9')
+echo -e "${YELLOW}CCD Mode is not the actual CCD Open/Closed, it is only the SPI Flash CCD Mode${NC}"
+
+case "$ccd_mode" in
+0) echo -e "CCD Mode: ${RED}Locked / Closed${NC}" ;;
+1) echo -e "CCD Mode: ${GREEN}Opened${NC}" ;;
+2) echo -e "CCD Mode: ${BLUE}Debug${NC}" ;;
+*) echo -e "CCD Mode: ${YELLOW}Unknown${NC}" ;;
+esac
+
 echo
-echo -e "${GREEN}----- CCD Capabilities -----${NC}"
-gsctool -a -I 2>/dev/null | grep -v "UartGSC" | while read -r line; do
-    name=$(echo "$line" | awk '{print $1}')
-    value=$(echo "$line" | awk '{print $2}')
 
-    # Map numeric or letter values to human-readable color-coded states
-    case "$value" in
-        0) state="${RED}Never${NC}";;
-        1) state="${BLUE}If Opened${NC}";;
-        2) state="${GREEN}Always${NC}";;
-        "") state="${RED}Locked / Not readable${NC}";;
-        Y|y) state="${GREEN}Yes${NC}";;
-        N|n) state="${RED}No${NC}";;
-        *) state="$value";;
-    esac
+# Function to check capability
+get_cap() {
 
-    echo -e "$name: $state"
-done
+cap="$1"
 
+line=$(echo "$GSC_I" | grep -i "$cap")
+
+# remove leading flags
+line=$(echo "$line" | sed 's/^[YNyn] *//')
+
+state=$(echo "$line" | grep -oE 'Never|IfOpened|Always|0|1|2' | head -n1)
+
+case "$state" in
+Never|0) out="${RED}Never${NC}" ;;
+IfOpened|1) out="${BLUE}IfOpened${NC}" ;;
+Always|2) out="${GREEN}Always${NC}" ;;
+*) out="${YELLOW}Unknown${NC}" ;;
+esac
+
+printf "%-20s %b\n" "$cap:" "$out"
+
+}
+
+get_cap AllowUnverifiedRo
+get_cap OverrideWP
+get_cap FlashAP
+get_cap FlashRead
+get_cap GscFullConsole
+
+
+echo
 # ---- SPI Flash Chip ----
-echo -e "\n${GREEN}----- SPI Flash Chip (Important Only) -----${NC}"
+echo -e "\n${GREEN}----- SPI Flash Chip -----${NC}"
 if command -v flashrom >/dev/null 2>&1; then
     flash_status=$(flashrom --wp-status 2>/dev/null | grep -E "enabled|disabled")
     if [ -n "$flash_status" ]; then
@@ -77,7 +106,7 @@ else
     echo -e "${RED}flashrom not installed${NC}"
 fi
 
-# ---- Kernel WP / HWP Messages ----
+# ---- Kernel WP ----
 echo
 echo -e "\n${GREEN}----- Kernel WP / HWP Messages (Important Only) -----${NC}"
 kernel_msgs=$(dmesg | grep -iE "write-protect|wp:|WP:|HWP" | tail -n 5)
