@@ -1,11 +1,11 @@
 #!/bin/bash
 # ==================================
 #      CHROMEBOOK WP DIAGNOSTIC
-#      Version: 12
+#      Version: 13
 # ==================================
 
 # Make version number visible at the top
-echo -e "\033[1;36mChromebook WP Diagnostic Script - Version 12\033[0m"
+echo -e "\033[1;36mChromebook WP Diagnostic Script - Version 13\033[0m"
 
 # Color codes
 RED='\033[0;31m'
