@@ -1,10 +1,10 @@
 #!/bin/bash
 # ==================================
 #      CHROMEBOOK WP DIAGNOSTIC
-#      Version: 17
+#      Version: 18
 # ==================================
 
-echo -e "\033[1;36mChromebook WP Diagnostic Script - Version 17\033[0m"
+echo -e "\033[1;36mChromebook WP Diagnostic Script - Version 18\033[0m"
 
 # Color codes
 RED='\033[0;31m'
@@ -192,7 +192,8 @@ echo -e "${YELLOW}e${NC}) Exit to VT2"
 
 while true; do
 
-read -rp "Choice: " choice
+read -rsn1 -p "Choice: " choice
+echo
 
 case "$choice" in
 
