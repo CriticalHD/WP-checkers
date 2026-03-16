@@ -131,23 +131,26 @@ FR_PID=$!
 # Spinner settings
 spinner="/-\|"
 i=0
-message="${YELLOW}Reading SPI flash (this may take a while) ${NC}"
+message="Reading SPI flash (this may take a while) "
 
-# Display initial message
-echo -ne "$message"
+# Hide cursor
+tput civis
 
 # Spinner loop
 while kill -0 $FR_PID 2>/dev/null; do
     i=$(( (i+1) %4 ))
-    # Move cursor to the end of the line and overwrite spinner
-    echo -ne "\r${message}${YELLOW}${spinner:$i:1}${NC}"
+    # Print message with spinner at the end
+    echo -ne "${YELLOW}${message}${spinner:$i:1}${NC}\r"
     sleep 0.2
 done
 
 wait $FR_PID
 FR_STATUS=$?
 
-# Clear the line
+# Show cursor again
+tput cnorm
+
+# Clear line
 echo -ne "\r\033[K"
 
 # Show result
@@ -158,7 +161,6 @@ else
 fi
 
 rm -f "$TMPFILE"
-
 echo
 echo -e "${YELLOW}==================================${NC}"
 echo -e "${YELLOW}           DONE${NC}"
