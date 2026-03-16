@@ -13,7 +13,7 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 
 echo -e "${CYAN}==================================${NC}"
-echo -e "${CYAN} Chromebook WP Diagnostic v11.1${NC}"
+echo -e "${CYAN} Chromebook WP Diagnostic v11.12${NC}"
 echo -e "${CYAN}==================================${NC}"
 
 # ------------------------------
