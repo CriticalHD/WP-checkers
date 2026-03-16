@@ -173,12 +173,12 @@ while true; do
             echo -e "${GREEN}VT2 diagnostic log saved to $logfile${NC}"
             ;;
         2)
-            gsctool -a -o FlashAP:always >/dev/null 2>&1
-            gsctool -a -o OverrideWP:always >/dev/null 2>&1
-            gsctool -a -o GscFullConsole:always >/dev/null 2>&1
-            gsctool -a -o OpenNoLongPP:always >/dev/null 2>&1
-            gsctool -a -o OpenNoDevMode:always >/dev/null 2>&1
-            gsctool -a -o AllowUnverifiedRo:always >/dev/null 2>&1
+            gsctool -a -I FlashAP:always >/dev/null 2>&1
+            gsctool -a -I OverrideWP:always >/dev/null 2>&1
+            gsctool -a -I GscFullConsole:always >/dev/null 2>&1
+            gsctool -a -I OpenNoLongPP:always >/dev/null 2>&1
+            gsctool -a -I OpenNoDevMode:always >/dev/null 2>&1
+            gsctool -a -I AllowUnverifiedRo:always >/dev/null 2>&1
             echo -e "${GREEN}CCD capabilities successfully updated${NC}"
             ;;
         e|E)
