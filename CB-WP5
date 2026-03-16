@@ -74,11 +74,11 @@ printf "%-22s %b\n" "$1:" "$state"
 
 }
 
-check_cap "AllowUnverifiedRo"
-check_cap "OverrideWP"
-check_cap "FlashAP"
-check_cap "FlashRead"
-check_cap "GscFullConsole"
+check_cap "AllowUnverifiedRo:"
+check_cap "OverrideWP:"
+check_cap "FlashAP:"
+check_cap "FlashRead:"
+check_cap "GscFullConsole:"
 
 
 # ------------------------------
