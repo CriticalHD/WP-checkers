@@ -128,7 +128,7 @@ TMPFILE=$(mktemp)
 flashrom -p internal -r "$TMPFILE" >/dev/null 2>&1 &
 FR_PID=$!
 
-# Spinner settings
+# Spinner setup
 spinner="/-\|"
 i=0
 message="Reading SPI flash (this may take a while) "
@@ -138,9 +138,9 @@ tput civis
 
 # Spinner loop
 while kill -0 $FR_PID 2>/dev/null; do
-    i=$(( (i+1) %4 ))
-    # Print message with spinner at the end
-    echo -ne "${YELLOW}${message}${spinner:$i:1}${NC}\r"
+    i=$(( (i+1) % 4 ))
+    # Print message in yellow and spinner in yellow, no extra NC inside
+    printf "\r\033[1;33m%s%s\033[0m" "$message" "${spinner:$i:1}"
     sleep 0.2
 done
 
