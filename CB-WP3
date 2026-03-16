@@ -1,7 +1,7 @@
 #!/bin/bash
 # ==================================
 #      CHROMEBOOK WP DIAGNOSTIC
-#      Version: 32 
+#      Version: 33 
 # ==================================
 
 # ---------- COLORS ----------
@@ -14,7 +14,7 @@ MAGENTA='\033[0;35m'
 NC='\033[0m'
 
 clear
-echo -e "\033[1;36mChromebook WP Diagnostic Script - Version 32 - By CriticalHD/neonnebula\033[0m"
+echo -e "\033[1;36mChromebook WP Diagnostic Script - Version 33 - By CriticalHD/neonnebula\033[0m"
 echo -e "${YELLOW}==================================${NC}"
 echo -e "${YELLOW}      CHROMEBOOK WP DIAGNOSTIC${NC}"
 echo -e "${YELLOW}==================================${NC}"
@@ -183,13 +183,15 @@ while true; do
     echo
 
     case "$choice" in
-        1)
+      1)
     TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-    LOCALFILE="$downloads/vt2_log_$TIMESTAMP.log"
+    DOWNLOADS="/mnt/stateful_partition/Downloads"
+    mkdir -p "$DOWNLOADS"
+    LOCALFILE="$DOWNLOADS/vt2_log_$TIMESTAMP.log"
 
     echo -e "${CYAN}Generating VT2 Diagnostic Log...${NC}"
 
-    # Write diagnostic log directly to Downloads
+    # Write diagnostic log to persistent Downloads folder
     {
         echo "===== VT2 DIAGNOSTIC LOG ====="
         date
@@ -204,21 +206,11 @@ while true; do
         dmesg
     } > "$LOCALFILE"
 
-    echo -e "${CYAN}Uploading log via transfer.sh...${NC}"
-
-    # Attempt upload
-    UPLOAD_URL=$(curl -s -f --retry 3 --upload-file "$LOCALFILE" "https://transfer.sh/vt2_log_$TIMESTAMP.log" 2>/dev/null)
-
-    if [[ "$UPLOAD_URL" == http* ]]; then
-        FILESIZE=$(du -h "$LOCALFILE" | awk '{print $1}')
-        echo -e "${GREEN}Log uploaded successfully!${NC}"
-        echo -e "${MAGENTA}URL:${NC} $UPLOAD_URL"
-        echo -e "${MAGENTA}Size:${NC} $FILESIZE"
-        # Optional: remove local file if upload succeeds
-        # rm -f "$LOCALFILE"
+    if [ -f "$LOCALFILE" ]; then
+        echo -e "${GREEN}Log saved successfully!${NC}"
+        echo -e "${YELLOW}Path:${NC} ${MAGENTA}$LOCALFILE${NC}"
     else
-        echo -e "${RED}Upload failed.${NC}"
-        echo -e "${YELLOW}Saved log locally to: ${MAGENTA}$LOCALFILE${NC}"
+        echo -e "${RED}Failed to save log!${NC}"
     fi
 
     read -n1 -rp "Press any key to return to menu..." </dev/tty
