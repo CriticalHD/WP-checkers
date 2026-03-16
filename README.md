@@ -1,4 +1,4 @@
-# Write Protect Script
+# Write Protect Informational Script
 
 This script includes multiple WP checks and confirmations
 
