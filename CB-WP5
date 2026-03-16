@@ -23,7 +23,7 @@ GSC_W=$(gsctool -a -W 2>/dev/null)
 
 # CCD Mode
 ccd_mode=$(echo "$GSC_W" | grep -i ccd_mode | tr -dc '0-9')
-
+echo -e "${YELLOW}CCD Mode is not the actual ccd open closed, it is only the SPI Flash CCD Mode${NC}"
 case "$ccd_mode" in
 0) echo -e "CCD Mode: ${RED}Locked / Closed${NC}" ;;
 1) echo -e "CCD Mode: ${GREEN}Opened${NC}" ;;
