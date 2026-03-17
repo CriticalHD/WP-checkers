@@ -1,7 +1,7 @@
 #!/bin/bash
 # ==================================
 #      CHROMEBOOK WP DIAGNOSTIC
-#      Version: 34 (VT2-safe)
+#      Version: 35 (VT2-safe)
 # ==================================
 
 # ---------- COLORS ----------
@@ -14,7 +14,7 @@ MAGENTA='\033[0;35m'
 NC='\033[0m'
 
 clear
-echo -e "\033[1;36mChromebook WP Diagnostic Script - Version 34 - By CriticalHD/neonnebula\033[0m"
+echo -e "\033[1;36mChromebook WP Diagnostic Script - Version 35 - By CriticalHD/neonnebula\033[0m"
 echo -e "${YELLOW}==================================${NC}"
 echo -e "${YELLOW}      CHROMEBOOK WP DIAGNOSTIC${NC}"
 echo -e "${YELLOW}==================================${NC}"
@@ -198,23 +198,33 @@ while true; do
 
         echo "---- DEVICE INFORMATION ----"
 
-        
-        SERIAL=$(vpd -l 2>/dev/null | grep -i 'serial_number' | cut -d'=' -f2 | tr -d '"')
+        # Serial number from VPD (only serial_number)
+        SERIAL=$(vpd -l 2>/dev/null | grep -i '^serial_number' | cut -d'=' -f2 | tr -d '"')
         SERIAL=${SERIAL:-unknown}
 
-        
+        # HWID from crossystem
         HWID=$(crossystem hwid 2>/dev/null)
         HWID=${HWID:-unknown}
 
-        
-        BOARD=$(grep -m1 "board" /proc/cpuinfo 2>/dev/null | awk -F: '{print $2}' | xargs)
-        BOARD=${BOARD:-$(cat /sys/class/chromeos/cros_ec/board 2>/dev/null)}
-        BOARD=${BOARD:-unknown}
+        # Extract prefix (first part of HWID)
+        HWID_PREFIX=$(echo "$HWID" | cut -d' ' -f1 | cut -d'-' -f1 | tr '[:upper:]' '[:lower:]')
 
-        MODEL=$(grep -m1 "model" /proc/cpuinfo 2>/dev/null | awk -F: '{print $2}' | xargs)
-        MODEL=${MODEL:-unknown}
+        # ---------- LOCAL BOARD MAPPING ----------
+        case "$HWID_PREFIX" in
+            craaskbowl | craask | craaskino)
+                BOARD="nissa"
+                ;;
+            hylia | navi)
+                BOARD="rauru"
+                ;;
+            kyogre | magneton | ponyta)
+                BOARD="corsola"
+                ;;
+            *)
+                BOARD="$HWID_PREFIX"
+                ;;
+        esac
 
-        echo "Model:          $MODEL"
         echo "Board:          $BOARD"
         echo "HWID:           $HWID"
         echo "Serial Number:  $SERIAL"
