@@ -19,6 +19,6 @@ curl -sSL https://raw.githubusercontent.com/CriticalHD/WP-checkers/refs/heads/ma
 - Fixed Log not downloading to downloads ***(You most likely need to be signed in)***
 - Added several log details (HWID, MODEL, SERIAL, CHROMEOSVER, TPMKERNVER. And more)
 - Added more details to the script itself
-- Went through 17 revisions
+- Went through 23 revisions
 - Fixed crossystem diagnostics not being true
 - Added details to the crossystem dev_boot_usb (fixing and gbb)
