@@ -16,7 +16,7 @@ curl -sSL https://raw.githubusercontent.com/CriticalHD/WP-checkers/refs/heads/ma
 
 ## Latest Update
 
-- Fixed Log not downloading to downloads
+- Fixed Log not downloading to downloads ***(You most likely need to be signed in)***
 - Added several log details (HWID, MODEL, SERIAL, CHROMEOSVER, TPMKERNVER. And more)
 - Added more details to the script itself
 - Went through 17 revisions
