@@ -1,7 +1,7 @@
 #!/bin/bash
 # ==================================
 #      CHROMEBOOK WP DIAGNOSTIC
-#      Version: 35 (VT2-safe)
+#      Version: 35.1 (VT2-safe)
 # ==================================
 
 # ---------- COLORS ----------
@@ -14,7 +14,7 @@ MAGENTA='\033[0;35m'
 NC='\033[0m'
 
 clear
-echo -e "\033[1;36mChromebook WP Diagnostic Script - Version 35 - By CriticalHD/neonnebula\033[0m"
+echo -e "\033[1;36mChromebook WP Diagnostic Script - Version 35.1 - By CriticalHD/neonnebula\033[0m"
 echo -e "${YELLOW}==================================${NC}"
 echo -e "${YELLOW}      CHROMEBOOK WP DIAGNOSTIC${NC}"
 echo -e "${YELLOW}==================================${NC}"
@@ -198,8 +198,7 @@ while true; do
 
         echo "---- DEVICE INFORMATION ----"
 
-        # Serial number from VPD (only serial_number)
-        SERIAL=$(vpd -l 2>/dev/null | grep -i '^serial_number' | cut -d'=' -f2 | tr -d '"')
+        SERIAL=$(vpd -l 2>/dev/null | grep -i '^serial_number' | head -n1 | cut -d'=' -f2 | tr -d '"')
         SERIAL=${SERIAL:-unknown}
 
         # HWID from crossystem
