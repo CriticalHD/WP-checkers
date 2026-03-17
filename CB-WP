@@ -48,13 +48,21 @@ print_diagnostics() {
     echo -e "wpsw_cur: ${YELLOW}$wpsw${NC} → $( [ "$wpsw" -eq 1 ] && echo -e "${RED}Flash write-protect ENABLED${NC}" || echo -e "${GREEN}Flash write-protect DISABLED${NC}" )"
     echo -e "devsw_cur: ${YELLOW}$devsw${NC} → $( [ "$devsw" -eq 1 ] && echo -e "${GREEN}Developer Switch ON${NC}" || echo -e "${RED}Developer Switch OFF${NC}" )"
 
-        if [ "$dev_usb" -eq 1 ]; then
-            echo -e "dev_boot_usb: ${YELLOW}$dev_usb${NC} → ${GREEN}USB boot allowed${NC}"
-        else
-        if [ "$gbb_modified" -eq 1 ]; then
-            echo -e "dev_boot_usb: ${YELLOW}$dev_usb${NC} → ${GREEN}USB boot allowed (GBB FLAGS SET)${NC}"
-        else
-            echo -e "dev_boot_usb: ${YELLOW}$dev_usb${NC} → ${RED}USB boot disabled${NC}"
+        gbb_dev_usb=0
+    if [[ -n "$gbb_flags" ]]; then
+        gbb_flags_dec=$((gbb_flags))
+    if (( (gbb_flags_dec & 0x10) != 0 )); then
+        gbb_dev_usb=1
+    fi
+fi
+
+if [ "$dev_usb" -eq 1 ]; then
+    echo -e "dev_boot_usb: ${YELLOW}$dev_usb${NC} → ${GREEN}USB boot allowed${NC}"
+else
+    if [ "$gbb_dev_usb" -eq 1 ]; then
+        echo -e "dev_boot_usb: ${YELLOW}$dev_usb${NC} → ${GREEN}USB boot allowed (GBB SET: $gbb_flags)${NC}"
+    else
+        echo -e "dev_boot_usb: ${YELLOW}$dev_usb${NC} → ${RED}USB boot disabled${NC}"
     fi
 fi
 
