@@ -21,3 +21,4 @@ curl -sSL https://raw.githubusercontent.com/CriticalHD/WP-checkers/refs/heads/ma
 - Added more details to the script itself
 - Went through 17 revisions
 - Fixed crossystem diagnostics not being true
+- Added details to the crossystem dev_boot_usb (fixing and gbb)
