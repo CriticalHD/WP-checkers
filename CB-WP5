@@ -196,35 +196,25 @@ while true; do
         date
         echo
 
-        echo "---- DEVICE INFORMATION ----"
-
-        SERIAL=$(vpd -l 2>/dev/null | grep -i '^"serial_number"' | cut -d'=' -f2 | tr -d '"')
-        SERIAL=${SERIAL:-unknown}
+# ---------- DEVICE INFORMATION ----------
+        echo -e "\n${CYAN}===== DEVICE INFORMATION =====${NC}"
 
         HWID=$(crossystem hwid 2>/dev/null)
         HWID=${HWID:-unknown}
 
-        HWID_PREFIX=$(echo "$HWID" | cut -d' ' -f1 | cut -d'-' -f1 | tr '[:upper:]' '[:lower:]')
+        MODEL=$(echo "$HWID" | awk '{print $1}')
+        MODEL=${MODEL:-unknown}
 
-        # ---------- LOCAL BOARD MAPPING ----------
-        case "$HWID_PREFIX" in
-            craaskbowl | craask | craaskino)
-                BOARD="nissa"
-                ;;
-            hylia | navi)
-                BOARD="rauru"
-                ;;
-            kyogre | magneton | ponyta)
-                BOARD="corsola"
-                ;;
-            *)
-                BOARD="$HWID_PREFIX"
-                ;;
-        esac
+        SERIAL=$(vpd -l 2>/dev/null | grep -i '^"serial_number"' | cut -d'=' -f2 | tr -d '"')
+        SERIAL=${SERIAL:-unknown}
 
-        echo "Board:          $BOARD"
-        echo "HWID:           $HWID"
-        echo "Serial Number:  $SERIAL"
+        CHROME_VER=$(grep -oE 'CHROMEOS_RELEASE_VERSION=[0-9]+' /etc/lsb-release 2>/dev/null | cut -d'=' -f2)
+        CHROME_VER=${CHROME_VER:-unknown}
+
+        echo -e "HWID:        ${YELLOW}$HWID${NC}"
+        echo -e "Model:       ${GREEN}$MODEL${NC}"
+        echo -e "Serial:      ${MAGENTA}$SERIAL${NC}"
+        echo -e "ChromeOS:    ${BLUE}$CHROME_VER${NC}"
         echo
 
         echo "---- CROSSYSTEM ----"
