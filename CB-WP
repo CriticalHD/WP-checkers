@@ -52,7 +52,7 @@ print_diagnostics() {
             echo -e "dev_boot_usb: ${YELLOW}$dev_usb${NC} → ${GREEN}USB boot allowed${NC}"
         else
         if [ "$gbb_modified" -eq 1 ]; then
-            echo -e "dev_boot_usb: ${YELLOW}$dev_usb${NC} → ${GREEN}USB boot allowed${NC}"
+            echo -e "dev_boot_usb: ${YELLOW}$dev_usb${NC} → ${GREEN}USB boot allowed (GBB FLAGS SET)${NC}"
         else
             echo -e "dev_boot_usb: ${YELLOW}$dev_usb${NC} → ${RED}USB boot disabled${NC}"
     fi
