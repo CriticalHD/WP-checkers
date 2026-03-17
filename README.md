@@ -10,7 +10,7 @@ How do I run this script ?
 curl -sSL https://raw.githubusercontent.com/CriticalHD/WP-checkers/refs/heads/main/CB-WP | bash
 ````
 
-<img width="500" height="900" alt="image" src="https://github.com/user-attachments/assets/4832a477-f4af-42b8-9424-75a58fdcd7d2" />
+<img width="350" height="750" alt="image" src="https://github.com/user-attachments/assets/4832a477-f4af-42b8-9424-75a58fdcd7d2" />
 
 ## Latest Update
 
