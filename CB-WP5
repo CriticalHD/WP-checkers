@@ -1,7 +1,7 @@
 #!/bin/bash
 # ==================================
 #      CHROMEBOOK WP DIAGNOSTIC
-#      Version: 35.3 (VT2-safe)
+#      Version: 35.4 (VT2-safe)
 # ==================================
 
 # ---------- COLORS ----------
@@ -14,7 +14,7 @@ MAGENTA='\033[0;35m'
 NC='\033[0m'
 
 clear
-echo -e "\033[1;36mChromebook WP Diagnostic Script - Version 35.3 - By CriticalHD/neonnebula\033[0m"
+echo -e "\033[1;36mChromebook WP Diagnostic Script - Version 35.4 - By CriticalHD/neonnebula\033[0m"
 echo -e "${YELLOW}==================================${NC}"
 echo -e "${YELLOW}      CHROMEBOOK WP DIAGNOSTIC${NC}"
 echo -e "${YELLOW}==================================${NC}"
@@ -197,7 +197,7 @@ while true; do
         echo
 
 # ---------- DEVICE INFORMATION ----------
-        echo -e "\n${CYAN}===== DEVICE INFORMATION =====${NC}"
+        echo "===== DEVICE INFORMATION ====="
 
         HWID=$(crossystem hwid 2>/dev/null)
         HWID=${HWID:-unknown}
@@ -217,11 +217,11 @@ while true; do
         TPM_VER=$(crossystem tpm_kernver 2>/dev/null)
         TPM_VER=${TPM_VER:-unknown}
 
-    echo -e "HWID:        $HWID$"
-    echo -e "Model:       $MODEL$ ("use this on cros.tech to find board")"
-    echo -e "Serial:      $SERIAL$"
-    echo -e "ChromeOS:    $CHROME_VER$ (Full: $FULL_VER$)"
-    echo -e "TPM Ver:     $TPM_VER$"
+    echo -e "HWID:        $HWID"
+    echo -e "Model:       $MODEL ("use this on cros.tech to find board")"
+    echo -e "Serial:      $SERIAL"
+    echo -e "ChromeOS:    $CHROME_VER (Full: $FULL_VER)"
+    echo -e "TPM Ver:     $TPM_VER"
 echo
 
         echo "---- CROSSYSTEM ----"
