@@ -12,7 +12,7 @@ curl -sSL https://raw.githubusercontent.com/CriticalHD/WP-checkers/refs/heads/ma
 
 <img width="350" height="750" alt="image" src="https://github.com/user-attachments/assets/4832a477-f4af-42b8-9424-75a58fdcd7d2" />
 
-** This is what it can look like
+**This is what it can look like**
 
 ## Latest Update
 
