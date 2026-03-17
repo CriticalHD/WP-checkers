@@ -204,18 +204,25 @@ while true; do
 
         MODEL=$(echo "$HWID" | awk '{print $1}')
         MODEL=${MODEL:-unknown}
-
+        
         SERIAL=$(vpd -l 2>/dev/null | grep -i '^"serial_number"' | cut -d'=' -f2 | tr -d '"')
         SERIAL=${SERIAL:-unknown}
-
-        CHROME_VER=$(grep -oE 'CHROMEOS_RELEASE_VERSION=[0-9]+' /etc/lsb-release 2>/dev/null | cut -d'=' -f2)
+        
+        FULL_VER=$(grep -oE 'CHROMEOS_RELEASE_VERSION=[^ ]+' /etc/lsb-release 2>/dev/null | cut -d'=' -f2)
+        FULL_VER=${FULL_VER:-unknown}
+        
+        CHROME_VER=$(echo "$FULL_VER" | cut -d'.' -f1)
         CHROME_VER=${CHROME_VER:-unknown}
+        
+        TPM_VER=$(crossystem tpm_kernver 2>/dev/null)
+        TPM_VER=${TPM_VER:-unknown}
 
-        echo -e "HWID:        ${YELLOW}$HWID${NC}"
-        echo -e "Model:       ${GREEN}$MODEL${NC}"
-        echo -e "Serial:      ${MAGENTA}$SERIAL${NC}"
-        echo -e "ChromeOS:    ${BLUE}$CHROME_VER${NC}"
-        echo
+    echo -e "HWID:        ${YELLOW}$HWID${NC}"
+    echo -e "Model:       ${GREEN}$MODEL${NC} ${CYAN}(use this on cros.tech to find board)${NC}"
+    echo -e "Serial:      ${MAGENTA}$SERIAL${NC}"
+    echo -e "ChromeOS:    ${BLUE}$CHROME_VER${NC} ${CYAN}(Full: $FULL_VER)${NC}"
+    echo -e "TPM Ver:     ${RED}$TPM_VER${NC}"
+echo
 
         echo "---- CROSSYSTEM ----"
         crossystem
