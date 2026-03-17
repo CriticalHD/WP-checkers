@@ -1,7 +1,7 @@
 #!/bin/bash
 # ==================================
 #      CHROMEBOOK WP DIAGNOSTIC
-#      Version: 40
+#      Version: 41
 # ==================================
 
 # ---------- COLORS ----------
@@ -14,7 +14,7 @@ MAGENTA='\033[0;35m'
 NC='\033[0m'
 
 clear
-echo -e "\033[1;36mChromebook WP Diagnostic Script - Version 40 - By CriticalHD/neonnebula\033[0m"
+echo -e "\033[1;36mChromebook WP Diagnostic Script - Version 41 - By CriticalHD/neonnebula\033[0m"
 echo -e "${YELLOW}==================================${NC}"
 echo -e "${YELLOW}      CHROMEBOOK WP DIAGNOSTIC${NC}"
 echo -e "${YELLOW}==================================${NC}"
@@ -48,11 +48,15 @@ print_diagnostics() {
     echo -e "wpsw_cur: ${YELLOW}$wpsw${NC} → $( [ "$wpsw" -eq 1 ] && echo -e "${RED}Flash write-protect ENABLED${NC}" || echo -e "${GREEN}Flash write-protect DISABLED${NC}" )"
     echo -e "devsw_cur: ${YELLOW}$devsw${NC} → $( [ "$devsw" -eq 1 ] && echo -e "${GREEN}Developer Switch ON${NC}" || echo -e "${RED}Developer Switch OFF${NC}" )"
 
-    if [ "$gbb_modified" -eq 1 ]; then
-        echo -e "dev_boot_usb: ${YELLOW}$dev_usb${NC} → ${YELLOW}USB boot allowed (GBB flags are set: $gbb_flags)${NC}"
-    else
-        echo -e "dev_boot_usb: ${YELLOW}$dev_usb${NC} → $( [ "$dev_usb" -eq 1 ] && echo -e "${GREEN}USB boot allowed${NC}" || echo -e "${RED}USB boot disabled${NC}" )"
+        if [ "$dev_usb" -eq 1 ]; then
+            echo -e "dev_boot_usb: ${YELLOW}$dev_usb${NC} → ${GREEN}USB boot allowed${NC}"
+        else
+        if [ "$gbb_modified" -eq 1 ]; then
+            echo -e "dev_boot_usb: ${YELLOW}$dev_usb${NC} → ${GREEN}USB boot allowed${NC}"
+        else
+            echo -e "dev_boot_usb: ${YELLOW}$dev_usb${NC} → ${RED}USB boot disabled${NC}"
     fi
+fi
 
     echo -e "dev_boot_signed_only: ${YELLOW}$dev_signed${NC} → $( [ "$dev_signed" -eq 1 ] && echo -e "${RED}Boot signed-only enforced${NC}" || echo -e "${GREEN}Unsigned boot allowed${NC}" )"
 
