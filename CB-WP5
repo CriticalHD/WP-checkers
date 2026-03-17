@@ -201,11 +201,9 @@ while true; do
         SERIAL=$(vpd -l 2>/dev/null | grep -i '^"serial_number"' | cut -d'=' -f2 | tr -d '"')
         SERIAL=${SERIAL:-unknown}
 
-        # HWID from crossystem
         HWID=$(crossystem hwid 2>/dev/null)
         HWID=${HWID:-unknown}
 
-        # Extract prefix (first part of HWID)
         HWID_PREFIX=$(echo "$HWID" | cut -d' ' -f1 | cut -d'-' -f1 | tr '[:upper:]' '[:lower:]')
 
         # ---------- LOCAL BOARD MAPPING ----------
@@ -256,7 +254,7 @@ while true; do
         fi
         echo
 
-        echo "---- KERNEL (Filtered WP / Firmware Messages) ----"
+        echo "---- KERNEL (WP / Firmware Messages) ----"
         dmesg | grep -iE "write-protect|wp:|WP:|flash|spi|HWP|ccd|gsc" | tail -n 50
         echo
 
