@@ -16,7 +16,7 @@ curl -sSL https://raw.githubusercontent.com/CriticalHD/WP-checkers/refs/heads/ma
 
 **This is what it can look like**
 
-## Latest Update V40-V43
+## Latest BASH Update V40-V43
 
 - Fixed Log not downloading to downloads ***(You most likely need to be signed in)***
 - Added several log details (HWID, MODEL, SERIAL, CHROMEOSVER, TPMKERNVER. And more)
